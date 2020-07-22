@@ -48,10 +48,9 @@ def slavePodTemplate = """
                 }
                 stage("Docker Login") {
                  withCredentials([usernamePassword(credentialsId: 'docker credentials', passwordVariable: 'password', usernameVariable: 'username')]) {
-                sh "docker login --username ${username} --password ${password}"
+                    sh "docker login --username ${username} --password ${password}"
               }
-            }
-              stage("Docker Push") {
+                 stage("Docker Push") {
                   sh "docker push sevil2020/artemis:${branch.replace('version/', 'v')}"
               }
               stage("Trigger Deploy"){

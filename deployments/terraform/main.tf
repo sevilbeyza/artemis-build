@@ -18,6 +18,6 @@ variable "deployment_environment" {
 
 
 variable "deployment_image" {
-  default = "fsadykov/artemis:master"
+  default = "sevilbeyza/artemis:master"
 }
 

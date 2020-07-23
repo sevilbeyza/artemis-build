@@ -40,7 +40,7 @@ def slavePodTemplate = """
     def docker_image = ""
     def branch = "${scm.branches[0].name}".replaceAll(/^\*\//, '').replace("/", "-").toLowerCase()
 
-    docker_image = "fsadykov/artemis:${branch.replace('version/', 'v')}"
+    docker_image = "sevil2020/artemis:${branch.replace('version/', 'v')}"
 
     // master -> prod  dev-feature/* -> dev qa-feature/* -> qa 
     if (branch == "master") {

@@ -1,4 +1,5 @@
 def k8slabel = "jenkins-pipeline-${UUID.randomUUID().toString()}"
+
 def slavePodTemplate = """
       metadata:
         labels:
@@ -35,34 +36,55 @@ def slavePodTemplate = """
             hostPath:
               path: /var/run/docker.sock
     """
-    def branch= "${scm.branches[0].name}".replaceAll(/^\*\//, '').replace("/", "-").toLowerCase() //get spesific baranch name -jenkin get branch name ?
-        podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml: false) {   
-            node(k8slabel) {
-            stage('Pull SCM') {
-                checkout scm
-            }
-            container('docker'){
-              dir('deployments/docker') {
+    def environment  = ""
+    def docker_image = ""
+    def branch = "${scm.branches[0].name}".replaceAll(/^\*\//, '').replace("/", "-").toLowerCase()
+
+    docker_image = "fsadykov/artemis:${branch.replace('version/', 'v')}"
+
+    // master -> prod  dev-feature/* -> dev qa-feature/* -> qa 
+    if (branch == "master") {
+      environment = "prod"
+    } else if (branch.contains('dev-feature')) {
+      environment = "dev"
+    } else if (branch.contains('qa-feature')) {
+      environment = "qa"
+    }
+    println("${environment}")
+
+
+    podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml: false) {
+      node(k8slabel) {
+
+        stage('Pull SCM') {
+            checkout scm 
+        }
+
+        container("docker") {
+            dir('deployments/docker') {
                 stage("Docker Build") {
-                  sh "docker build -t sevil2020/artemis:${branch.replace('version/', 'v')}  ."
+                  sh "docker build -t ${docker_image}  ."
                 }
+
                 stage("Docker Login") {
-                 withCredentials([usernamePassword(credentialsId: 'docker credentials', passwordVariable: 'password', usernameVariable: 'username')]) {
-                    sh "docker login --username ${username} --password ${password}"
-              }
-                 stage("Docker Push") {
-                  sh "docker push sevil2020/artemis:${branch.replace('version/', 'v')}"
-              }
-              stage("Trigger Deploy"){
-                      build 'artemis-build'
-                      parameters: [
-                        [$class: 'BooleanParameterValue', name: 'terraformApply',     value: true],
-                        [$class: 'StringParameterValue',  name: 'environment',         value: "dev"]
-                  }
-               }
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', passwordVariable: 'password', usernameVariable: 'username')]) {
+                      sh "docker login --username ${username} --password ${password}"
+                    }
+                }
+
+                stage("Docker Push") {
+                  sh "docker push ${docker_image}"
+                }
+
+                stage("Trigger Deploy") {
+                  build job: 'artemis-deploy', 
+                  parameters: [
+                      [$class: 'BooleanParameterValue', name: 'terraformApply', value: true],
+                      [$class: 'StringParameterValue',  name: 'environment', value: "${environment}"],
+                      [$class: 'StringParameterValue',  name: 'docker_image', value: "${docker_image}"]
+                      ]
+                }
             }
-         }
+        }
       }
-}
-
-
+    }

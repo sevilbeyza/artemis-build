@@ -36,6 +36,7 @@ def slavePodTemplate = """
             hostPath:
               path: /var/run/docker.sock
     """
+   //specify the environmet DYNAMICLY and print 
     def environment  = ""
     def docker_image = ""
     def branch = "${scm.branches[0].name}".replaceAll(/^\*\//, '').replace("/", "-").toLowerCase()
@@ -53,6 +54,8 @@ def slavePodTemplate = """
     println("${environment}")
 
 
+   
+   
     podTemplate(name: k8slabel, label: k8slabel, yaml: slavePodTemplate, showRawYaml: false) {
       node(k8slabel) {
 
@@ -67,7 +70,7 @@ def slavePodTemplate = """
                 }
 
                 stage("Docker Login") {
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', passwordVariable: 'password', usernameVariable: 'username')]) {
+                    withCredentials([usernamePassword(credentialsId: 'docker credentials', passwordVariable: 'password', usernameVariable: 'username')]) {
                       sh "docker login --username ${username} --password ${password}"
                     }
                 }

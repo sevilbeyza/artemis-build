@@ -12,9 +12,7 @@ module "artemis-deploy" {
 }
 
 
-variable "deployment_environment" {
-  default = "dev"
-}
+
 
 variable "environmet"{
   

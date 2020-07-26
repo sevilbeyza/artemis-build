@@ -16,6 +16,10 @@ variable "deployment_environment" {
   default = "dev"
 }
 
+variable "environmet"{
+  
+}
+
 
 variable "deployment_image" {
   default = "sevilbeyza/artemis:master"

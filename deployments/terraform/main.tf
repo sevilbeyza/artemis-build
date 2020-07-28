@@ -13,7 +13,8 @@ module "artemis-deploy" {
 
 
 
-
+#if we want to create RDS and integrate with ARTEMIS HOW ????
+#Just added below RDS resource 
 # resource "aws_rds_cluster_instance" "cluster_instances" {
 #   count              = 2
 #   identifier         = "aurora-cluster-demo-${count.index}"

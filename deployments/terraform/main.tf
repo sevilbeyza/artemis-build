@@ -33,8 +33,7 @@ module "artemis-deploy" {
 # }
 
 
-variable "environment" {
-}
+variable "environment" {}
 
 
 variable "deployment_image" {
